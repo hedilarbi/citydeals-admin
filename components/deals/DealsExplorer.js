@@ -163,7 +163,7 @@ const DealsExplorer = ({ deals = [], pagination, query, isError }) => {
       )}
 
       {!isError && filteredDeals.length > 0 && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
           {filteredDeals.map((deal) => {
             const coverUrl = deal?.files?.cover?.url;
             const company = deal?.relateds?.company;

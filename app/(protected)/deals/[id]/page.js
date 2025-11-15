@@ -26,8 +26,10 @@ const computeStatus = (deal) => {
   const start = new Date(deal.date_start.replace(" ", "T")).getTime();
   const end = new Date(deal.date_end.replace(" ", "T")).getTime();
 
-  if (now < start) return { label: "À venir", color: "bg-yellow-100 text-yellow-800" };
-  if (now > end) return { label: "Terminé", color: "bg-gray-200 text-gray-700" };
+  if (now < start)
+    return { label: "À venir", color: "bg-yellow-100 text-yellow-800" };
+  if (now > end)
+    return { label: "Terminé", color: "bg-gray-200 text-gray-700" };
   return { label: "En cours", color: "bg-green-100 text-green-700" };
 };
 
@@ -67,8 +69,12 @@ export default async function DealDetailPage({ params }) {
             <FaArrowLeft /> Retour aux deals
           </Link>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-semibold text-gray-900">{dealData.name}</h1>
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${status.color}`}>
+            <h1 className="text-3xl font-semibold text-gray-900">
+              {dealData.name}
+            </h1>
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-semibold ${status.color}`}
+            >
               {status.label}
             </span>
           </div>
@@ -121,11 +127,17 @@ export default async function DealDetailPage({ params }) {
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
               <div>
                 <p className="text-xs uppercase text-gray-400">Créé le</p>
-                <p className="text-gray-900 font-medium">{formatDateTime(dealData.date_add)}</p>
+                <p className="text-gray-900 font-medium">
+                  {formatDateTime(dealData.date_add)}
+                </p>
               </div>
               <div>
-                <p className="text-xs uppercase text-gray-400">Dernière mise à jour</p>
-                <p className="text-gray-900 font-medium">{formatDateTime(dealData.date_upd)}</p>
+                <p className="text-xs uppercase text-gray-400">
+                  Dernière mise à jour
+                </p>
+                <p className="text-gray-900 font-medium">
+                  {formatDateTime(dealData.date_upd)}
+                </p>
               </div>
               <div>
                 <p className="text-xs uppercase text-gray-400">Localisation</p>
@@ -146,7 +158,9 @@ export default async function DealDetailPage({ params }) {
 
         <div className="space-y-6">
           <div className="bg-white border border-light-gray rounded-3xl shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900">Entreprise liée</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Entreprise liée
+            </h2>
             {company ? (
               <div className="mt-4 space-y-2 text-sm text-gray-600">
                 <p className="text-gray-900 font-medium">{company.name}</p>
@@ -161,16 +175,10 @@ export default async function DealDetailPage({ params }) {
                 </Link>
               </div>
             ) : (
-              <p className="text-sm text-gray-500 mt-4">Aucune entreprise associée.</p>
+              <p className="text-sm text-gray-500 mt-4">
+                Aucune entreprise associée.
+              </p>
             )}
-          </div>
-
-          <div className="bg-white border border-dashed border-light-gray rounded-3xl p-6 text-sm text-gray-500">
-            Besoin de modifier ce deal ? Utilisez l&apos;action dédiée sur{" "}
-            <Link href={`/deals/${dealData.id_deal}/edit`} className="text-pr hover:underline">
-              la page d’édition
-            </Link>
-            .
           </div>
         </div>
       </div>
