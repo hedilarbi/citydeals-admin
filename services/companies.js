@@ -99,3 +99,37 @@ export async function fetchCompanyDeals(id, params = {}) {
 
   return response.json();
 }
+
+const safeParseJson = async (response) => {
+  try {
+    return await response.json();
+  } catch (error) {
+    return null;
+  }
+};
+
+export async function toggleCompanyActivation(id, currentlyActive) {
+  if (!id) {
+    throw new Error(
+      "Identifiant d'entreprise manquant pour mettre à jour le statut."
+    );
+  }
+
+  const headers = await withAuthHeaders();
+  const action = currentlyActive ? "deactivate" : "activate";
+
+  const response = await fetch(`${API_BASE_URL}/company/${id}/${action}`, {
+    cache: "no-store",
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Impossible de ${
+        action === "activate" ? "activer" : "désactiver"
+      } l'entreprise.`
+    );
+  }
+
+  return safeParseJson(response);
+}

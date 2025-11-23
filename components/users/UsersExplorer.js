@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   FaArrowLeft,
   FaMagnifyingGlass,
@@ -9,14 +9,30 @@ import {
   FaPhone,
   FaUserPlus,
 } from "react-icons/fa6";
+import { toggleUserActivation } from "@/services/users";
 
 const statusStyles = (active) =>
   active
     ? "bg-green-50 text-green-600 border-green-200"
     : "bg-red-50 text-red-600 border-red-200";
 
+const buildStatusMap = (users = []) => {
+  return users.reduce((acc, user) => {
+    if (user?.id_user) {
+      acc[user.id_user] = user.active === 1;
+    }
+    return acc;
+  }, {});
+};
+
 const UsersExplorer = ({ users = [], pagination, query, isError }) => {
   const [searchValue, setSearchValue] = useState(query?.q ?? "");
+  const [statusMap, setStatusMap] = useState(() => buildStatusMap(users));
+  const [pendingToggleId, setPendingToggleId] = useState(null);
+
+  useEffect(() => {
+    setStatusMap(buildStatusMap(users));
+  }, [users]);
 
   const filteredUsers = useMemo(() => {
     if (!searchValue) return users;
@@ -28,10 +44,42 @@ const UsersExplorer = ({ users = [], pagination, query, isError }) => {
     });
   }, [users, searchValue]);
 
-  const activeUsers = useMemo(
-    () => users.filter((user) => user.active === 1).length,
-    [users]
-  );
+  const activeUsers = useMemo(() => {
+    const values = Object.values(statusMap);
+    if (values.length === 0) {
+      return users.filter((user) => user.active === 1).length;
+    }
+    return values.filter(Boolean).length;
+  }, [statusMap, users]);
+
+  const getUserStatus = (user) =>
+    statusMap[user.id_user] ?? user.active === 1;
+
+  const handleToggle = async (user) => {
+    const userId = user?.id_user;
+    if (!userId) return;
+
+    const currentStatus = getUserStatus(user);
+    const nextStatus = !currentStatus;
+
+    setStatusMap((previous) => ({
+      ...previous,
+      [userId]: nextStatus,
+    }));
+    setPendingToggleId(userId);
+
+    try {
+      await toggleUserActivation(userId, currentStatus);
+    } catch (error) {
+      console.error("Erreur lors du changement de statut utilisateur", error);
+      setStatusMap((previous) => ({
+        ...previous,
+        [userId]: currentStatus,
+      }));
+    } finally {
+      setPendingToggleId(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -129,52 +177,87 @@ const UsersExplorer = ({ users = [], pagination, query, isError }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-light-gray">
-              {filteredUsers.map((user) => (
-                <tr
-                  key={user.id_user}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-6 py-4 text-gray-700 capitalize">
-                    {user.lastname || "—"}
-                  </td>
-                  <td className="px-6 py-4 text-gray-700 capitalize">
-                    {user.firstname || "—"}
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="font-medium text-gray-900">{user.email}</p>
-                  </td>
-                  <td className="px-6 py-4 text-gray-700">
-                    {user.phone || "—"}
-                  </td>
-                  <td className="px-6 py-4 text-gray-700 capitalize">
-                    {user.city || "—"}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium border ${statusStyles(
-                        user.active === 1
-                      )}`}
-                    >
-                      {user.active === 1 ? "Actif" : "Inactif"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-700">
-                    {new Date(user.date_add.replace(" ", "T")).toLocaleDateString("fr-FR", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </td>
-                  <td className="px-6 py-4">
-                    <Link
-                      href={`/utilisateurs/${user.id_user}`}
-                      className="text-xs font-medium text-pr hover:text-pr-dark"
-                    >
-                      Voir les détails
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {filteredUsers.map((user) => {
+                const isActive = getUserStatus(user);
+                const formattedDate = user.date_add
+                  ? new Date(user.date_add.replace(" ", "T")).toLocaleDateString(
+                      "fr-FR",
+                      {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      }
+                    )
+                  : "—";
+
+                return (
+                  <tr
+                    key={user.id_user}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-6 py-4 text-gray-700 capitalize">
+                      {user.lastname || "—"}
+                    </td>
+                    <td className="px-6 py-4 text-gray-700 capitalize">
+                      {user.firstname || "—"}
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="font-medium text-gray-900">{user.email}</p>
+                    </td>
+                    <td className="px-6 py-4 text-gray-700">
+                      {user.phone || "—"}
+                    </td>
+                    <td className="px-6 py-4 text-gray-700 capitalize">
+                      {user.city || "—"}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium border ${statusStyles(
+                          isActive
+                        )}`}
+                      >
+                        {isActive ? "Actif" : "Inactif"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-gray-700">
+                      {formattedDate}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-label={`${isActive ? "Désactiver" : "Activer"} ${
+                            user.firstname ?? user.lastname ?? "l'utilisateur"
+                          }`}
+                          aria-checked={isActive}
+                          onClick={() => handleToggle(user)}
+                          disabled={pendingToggleId === user.id_user}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            isActive ? "bg-pr" : "bg-gray-300"
+                          } ${
+                            pendingToggleId === user.id_user
+                              ? "opacity-60 cursor-not-allowed"
+                              : ""
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              isActive ? "translate-x-5" : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                        <Link
+                          href={`/utilisateurs/${user.id_user}`}
+                          className="text-xs font-medium text-pr hover:text-pr-dark"
+                        >
+                          Voir les détails
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

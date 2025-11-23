@@ -1,8 +1,10 @@
 "use client";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaExternalLinkAlt, FaTrashAlt } from "react-icons/fa";
 import { FaRegPenToSquare } from "react-icons/fa6";
+import { toggleCompanyActivation } from "@/services/companies";
 
 const formatDate = (dateString) => {
   if (!dateString) {
@@ -36,7 +38,55 @@ const StatusPill = ({ active }) => {
   );
 };
 
+const buildStatusMap = (companies = []) => {
+  return companies.reduce((acc, company) => {
+    if (company?.id_company) {
+      acc[company.id_company] = company.active === 1;
+    }
+    return acc;
+  }, {});
+};
+
 const CompaniesTable = ({ companies, onDelete }) => {
+  const [statusMap, setStatusMap] = useState(() => buildStatusMap(companies));
+  const [pendingToggleId, setPendingToggleId] = useState(null);
+
+  useEffect(() => {
+    setStatusMap(buildStatusMap(companies));
+  }, [companies]);
+
+  const getCompanyStatus = (company) =>
+    statusMap[company.id_company] ?? company.active === 1;
+
+  const handleToggle = async (company) => {
+    const companyId = company?.id_company;
+    if (!companyId) return;
+
+    const currentStatus = getCompanyStatus(company);
+    const nextStatus = !currentStatus;
+
+    setStatusMap((previous) => ({
+      ...previous,
+      [companyId]: nextStatus,
+    }));
+    setPendingToggleId(companyId);
+
+    try {
+      await toggleCompanyActivation(companyId, currentStatus);
+    } catch (error) {
+      console.error(
+        "Erreur lors du changement de statut de l'entreprise",
+        error
+      );
+      setStatusMap((previous) => ({
+        ...previous,
+        [companyId]: currentStatus,
+      }));
+    } finally {
+      setPendingToggleId(null);
+    }
+  };
+
   return (
     <div className="overflow-x-auto bg-white border border-light-gray rounded-2xl shadow-sm">
       <table className="min-w-full divide-y divide-light-gray text-sm">
@@ -56,6 +106,7 @@ const CompaniesTable = ({ companies, onDelete }) => {
             const logoUrl = company?.files?.logo?.url;
             const categoryName =
               company?.relateds?.company_category?.name ?? "—";
+            const isActive = getCompanyStatus(company);
 
             return (
               <tr key={company.id_company} className="hover:bg-gray-50 transition-colors">
@@ -111,10 +162,29 @@ const CompaniesTable = ({ companies, onDelete }) => {
                   {formatDate(company.date_add)}
                 </td>
                 <td className="px-6 py-4">
-                  <StatusPill active={company.active === 1} />
+                  <StatusPill active={isActive} />
                 </td>
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4 flex-wrap">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-label={`${isActive ? "Désactiver" : "Activer"} ${
+                        company.name
+                      }`}
+                      aria-checked={isActive}
+                      onClick={() => handleToggle(company)}
+                      disabled={pendingToggleId === company.id_company}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        isActive ? "bg-pr" : "bg-gray-300"
+                      } ${pendingToggleId === company.id_company ? "opacity-60 cursor-not-allowed" : ""}`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          isActive ? "translate-x-5" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
                     <Link
                       href={`/entreprises/${company.id_company}`}
                       className="inline-flex items-center gap-1 text-xs font-medium text-white bg-pr hover:bg-pr-dark transition-colors px-3 py-2 rounded-full"
