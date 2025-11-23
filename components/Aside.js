@@ -2,7 +2,7 @@
 import Link from "next/link";
 import React from "react";
 import { usePathname } from "next/navigation";
-import { FaChartLine, FaExclamation, FaLink } from "react-icons/fa6";
+import { FaBell, FaChartLine, FaExclamation, FaLink } from "react-icons/fa6";
 import LogoutButton from "./LogoutButton";
 import { GrCompliance } from "react-icons/gr";
 import { FaStore } from "react-icons/fa6";
@@ -87,6 +87,23 @@ const Aside = () => {
                 <RiDiscountPercentFill />
               </div>
               <span>Deals</span>
+            </Link>
+            <Link
+              href="/notifications"
+              className={`${linkBase} ${
+                isActive("/notifications") ? active : inactive
+              }`}
+            >
+              <div
+                className={` text-2xl ${
+                  isActive("/notifications")
+                    ? "border-current"
+                    : "border-gray-600 text-gray-600"
+                }`}
+              >
+                <FaBell />
+              </div>
+              <span>Notifications</span>
             </Link>
 
             {/* <Link
