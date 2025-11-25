@@ -9,8 +9,9 @@ export default function NotificationsPage() {
           Envoyer une notification push
         </h1>
         <p className="text-sm text-gray-500 mt-1 max-w-2xl">
-          Définissez un titre et un message puis envoyez-les vers l&apos;app
-          mobile en utilisant le token de test configuré dans l&apos;API.
+          Choisissez un destinataire (invités, utilisateurs ou entreprises),
+          ciblez éventuellement une ville, puis envoyez le titre et le message
+          vers les appareils correspondants.
         </p>
       </div>
 

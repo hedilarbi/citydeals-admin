@@ -5,7 +5,36 @@ import { useState } from "react";
 const initialState = {
   title: "",
   body: "",
+  recipient: "guests",
+  city: "all",
 };
+
+const cityOptions = [
+  "Ariana",
+  "Béja",
+  "Ben Arous",
+  "Bizerte",
+  "Gabès",
+  "Gafsa",
+  "Jendouba",
+  "Kairouan",
+  "Kasserine",
+  "Kébili",
+  "Le Kef",
+  "Mahdia",
+  "La Manouba",
+  "Médenine",
+  "Monastir",
+  "Nabeul",
+  "Sfax",
+  "Sidi Bouzid",
+  "Siliana",
+  "Sousse",
+  "Tataouine",
+  "Tozeur",
+  "Tunis",
+  "Zaghouan",
+];
 
 export default function NotificationForm() {
   const [form, setForm] = useState(initialState);
@@ -56,6 +85,51 @@ export default function NotificationForm() {
       onSubmit={handleSubmit}
       className="space-y-4 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 max-w-2xl"
     >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label
+            htmlFor="recipient"
+            className="text-sm font-medium text-gray-700 block"
+          >
+            Destinataire
+          </label>
+          <select
+            id="recipient"
+            name="recipient"
+            value={form.recipient}
+            onChange={handleChange}
+            className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pr/50 bg-white"
+          >
+            <option value="guests">Invités</option>
+            <option value="users">Utilisateurs</option>
+            <option value="companies">Entreprises</option>
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <label
+            htmlFor="city"
+            className="text-sm font-medium text-gray-700 block"
+          >
+            Ville
+          </label>
+          <select
+            id="city"
+            name="city"
+            value={form.city}
+            onChange={handleChange}
+            className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pr/50 bg-white"
+          >
+            <option value="all">Toutes les villes</option>
+            {cityOptions.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div className="space-y-2">
         <label
           htmlFor="title"
