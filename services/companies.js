@@ -78,13 +78,14 @@ export async function fetchCompanyDeals(id, params = {}) {
   const query = new URLSearchParams();
   const { page, limit } = params;
 
+  query.set("id_company", id);
   if (page) query.set("page", page);
   if (limit) query.set("limit", limit);
 
   const headers = await withAuthHeaders();
 
   const response = await fetch(
-    `${API_BASE_URL}/deals/company/${id}${
+    `${API_BASE_URL}/deals${
       query.toString() ? `?${query.toString()}` : ""
     }`,
     {

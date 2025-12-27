@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa6";
 
 import BackButton from "@/components/BackButton";
+import CompanySubscriptions from "@/components/companies/CompanySubscriptions";
 import { fetchCompany, fetchCompanyDeals } from "@/services/companies";
 
 const formatDate = (value) => {
@@ -259,6 +260,11 @@ export default async function CompanyDetailPage({ params }) {
             )}
           </div>
         </div>
+
+        <CompanySubscriptions
+          companyId={company.id_company ?? companyId}
+          companyName={company.name}
+        />
 
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
